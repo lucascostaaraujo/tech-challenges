@@ -1,0 +1,53 @@
+version: "3"
+
+services:
+  zookeeper:
+    container_name: zookeeper
+    image: confluentinc/cp-zookeeper:6.2.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - ./zookeeper-data:/var/lib/zookeeper/data
+      - ./zookeeper-logs:/var/lib/zookeeper/log
+    restart: unless-stopped
+
+  kafka:
+    container_name: kafka
+    image: confluentinc/cp-kafka:6.2.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "8102:8102"
+      - "8101:8101"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT_HOST://0.0.0.0:8101, PLAINTEXT://kafka:29092, PLAINTEXT_HOST2://0.0.0.0:8102
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,PLAINTEXT_HOST2:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_LOG_RETENTION_HOURS: 24
+      KAFKA_CFG_MESSAGE_MAX_BYTES: 100001200
+      KAFKA_CFG_SOCKET_REQUEST_MAX_BYTES: 100001200
+      KAFKA_SOCKET_REQUEST_MAX_BYTES: 100001200
+      KAFKA_MESSAGE_MAX_BYTES: 100001200
+      KAFKA_HEARTBEAT_INTERVAL_MS: 600000
+      KAFKA_SESSION_TIMEOUT_MS: 1200000
+    volumes:
+      - ./kafka-data:/var/lib/kafka/data
+      - ./kafka-secrets:/etc/kafka/secrets
+    restart: unless-stopped
+
+  kafdrop:
+    container_name: kafdrop
+    image: obsidiandynamics/kafdrop:latest
+    depends_on:
+      - kafka
+    ports:
+      - "8110:9000"
+    environment:
+      KAFKA_BROKERCONNECT: kafka:29092
+    restart: unless-stopped
+    profiles:
+      - debug

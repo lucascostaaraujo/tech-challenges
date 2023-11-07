@@ -1,0 +1,15 @@
+version: '3.7'
+services:
+  async_worker:
+    container_name: ${APP_NAME}-${ENV_NAME}
+    image: ${REGISTRY_DOCKER}/${APP_NAME}-${ENV_NAME}
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        APP_NAME: ${APP_NAME}
+    env_file:
+      - .env
+    ports:
+    - ${EXTERNAL_PORT}:8000
+    restart: aways

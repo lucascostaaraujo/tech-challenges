@@ -1,0 +1,31 @@
+
+version: '3.7'
+services:
+
+  api_rest:
+    container_name: ${APP_NAME}-${ENV_NAME}
+    image: ${REGISTRY_DOCKER}/${APP_NAME}-${ENV_NAME}
+    build:
+      context: .
+      dockerfile: ./devops/navagio/api_rest/Dockerfile
+      args:
+        APP_NAME: ${APP_NAME}
+    env_file:
+      - ./devops/navagio/api_rest/.env
+    ports:
+    - ${EXTERNAL_PORT}:80
+    restart: aways
+
+  async_worker:
+    container_name: ${APP_NAME}-${ENV_NAME}
+    image: ${REGISTRY_DOCKER}/${APP_NAME}-${ENV_NAME}
+    build:
+      context: .
+      dockerfile: ./devops/navagio/async_worker/Dockerfile
+      args:
+        APP_NAME: ${APP_NAME}
+    env_file:
+      - ./devops/navagio/async_worker/.env
+    ports:
+    - ${EXTERNAL_PORT}:80
+    restart: aways
